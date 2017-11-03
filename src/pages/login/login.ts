@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { IonicPage, NavController, ToastController } from 'ionic-angular';
 
-import { User } from '../../providers/providers';
-import { MainPage } from '../pages';
+import { UserdbProvider } from '../../providers/userdb/userdb';
+import { User_Class } from "../../providers/userdb/user_class";
 
 @IonicPage()
 @Component({
@@ -11,40 +11,29 @@ import { MainPage } from '../pages';
   templateUrl: 'login.html'
 })
 export class LoginPage {
-  // The account fields for the login form.
-  // If you're using the username field with or without email, make
-  // sure to add it to the type
-  account: { email: string, password: string } = {
-    email: 'test@example.com',
-    password: 'test'
-  };
+  email_id:string='';
+  password:string='';
+  constructor(public navCtrl: NavController,public _db:UserdbProvider){
 
-  // Our translated text strings
-  private loginErrorString: string;
+  }
+  onLoginClick(){
 
-  constructor(public navCtrl: NavController,
-    public user: User,
-    public toastCtrl: ToastController,
-    public translateService: TranslateService) {
+      this._db.Login(new User_Class(this.email_id,this.password,''))
+      .subscribe(
+        (x:User_Class[])=>{
 
-    this.translateService.get('LOGIN_ERROR').subscribe((value) => {
-      this.loginErrorString = value;
-    })
+            if(x.length==1){
+              alert('login');
+            }
+            else{
+              alert('invalid');
+            }
+        },
+        function(error){
+          console.log(error);
+        },
+        function(){}
+      );
   }
 
-  // Attempt to login in through our User service
-  doLogin() {
-    this.user.login(this.account).subscribe((resp) => {
-      this.navCtrl.push(MainPage);
-    }, (err) => {
-      this.navCtrl.push(MainPage);
-      // Unable to log in
-      let toast = this.toastCtrl.create({
-        message: this.loginErrorString,
-        duration: 3000,
-        position: 'top'
-      });
-      toast.present();
-    });
-  }
 }
